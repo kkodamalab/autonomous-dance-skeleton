@@ -23,8 +23,7 @@ function draw(p, alpha = 1) {
   ctx.restore();
 }
 function raw(p) { if (!p) return; ctx.fillStyle = '#ff5ea8'; for (const q of p.rawLandmarks) { ctx.beginPath(); ctx.arc(q.x, q.y, 2, 0, Math.PI * 2); ctx.fill(); } }
-function detach(p, x) { const d = cfg().distance * x, dx = $('direction').value === 'left' ? -d : $('direction').value === 'up' ? 0 : d, dy = $('direction').value === 'up' ? -d * .6 : 0; for (const q of Object.values(p.joints)) { q.x += dx; q.y += dy; } p.head.x += dx; p.head.y += dy; return p; }
-function setPoseStatus(human) { $('poseStatus').textContent = `CAMERA: ${cameraOn ? 'READY' : 'OFF'} | MEDIAPIPE: ${tracker.status} | POSE: ${human ? 'DETECTED' : 'NOT DETECTED'} | LANDMARKS: ${tracker.landmarkCount}`; }
+function detach(p, x) { const d = cfg().distance * x, dx = $('direction').value === 'left' ? -d : $('direction').value === 'up' ? 0 : d, dy = $('direction').value === 'up' ? -d * .6 : 0; for (const q of Object.values(p.joints)) { q.x += dx; q.y += dy; } p.head.x += dx; p.head.y += dy; return p; }function setPoseStatus(human) { const el = $('poseStatus'); if (el) el.textContent = `CAMERA: ${cameraOn ? 'READY' : 'OFF'} | MEDIAPIPE: ${tracker.status} | POSE: ${human ? 'DETECTED' : 'NOT DETECTED'} | LANDMARKS: ${tracker.landmarkCount}`; }
 function loop(now) {
   requestAnimationFrame(loop); fps = fps * .9 + 1000 / Math.max(1, now - last) * .1; last = now;
   const s = cfg(), f = audio.update(now, $('bpmAuto').checked); if (!$('bpmAuto').checked) audio.bpm = +$('bpm').value;
