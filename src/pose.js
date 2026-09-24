@@ -41,7 +41,10 @@ export class PoseTracker {
     const scale = Math.max(w / this.video.videoWidth, h / this.video.videoHeight), drawW = this.video.videoWidth * scale, drawH = this.video.videoHeight * scale, offsetX = (w - drawW) / 2, offsetY = (h - drawH) / 2;
     const rawLandmarks = landmarks.map(point => ({ x: offsetX + (mirror ? 1 - point.x : point.x) * drawW, y: offsetY + point.y * drawH, z: point.z, visibility: point.visibility ?? 1 }));
     const joints = {}; for (const name of names) joints[name] = rawLandmarks[map[name]];
-    const head = rawLandmarks[0], shoulderWidth = Math.hypot(joints.shoulderL.x - joints.shoulderR.x, joints.shoulderL.y - joints.shoulderR.y);
+    // A stable head center is less jittery than the nose alone and is the only face anchor.
+    const headPoints = [joints.nose, joints.eyeL, joints.eyeR, joints.earL, joints.earR].filter(Boolean);
+    const head = { x: headPoints.reduce((sum, point) => sum + point.x, 0) / headPoints.length, y: headPoints.reduce((sum, point) => sum + point.y, 0) / headPoints.length };
+    const shoulderWidth = Math.hypot(joints.shoulderL.x - joints.shoulderR.x, joints.shoulderL.y - joints.shoulderR.y);
     return { joints, head, scale: Math.max(36, shoulderWidth * .8), rawLandmarks };
   }
   ema(previous, next, alpha) { const output = structuredClone(next); for (const [name, point] of Object.entries(next.joints)) { output.joints[name].x = previous.joints[name].x * (1 - alpha) + point.x * alpha; output.joints[name].y = previous.joints[name].y * (1 - alpha) + point.y * alpha; } output.head.x = previous.head.x * (1 - alpha) + next.head.x * alpha; output.head.y = previous.head.y * (1 - alpha) + next.head.y * alpha; return output; }
